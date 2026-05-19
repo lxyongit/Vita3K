@@ -40,7 +40,6 @@ class AppsListViewModel(application: Application) : AndroidViewModel(application
     private val availableActionsByTitleId = mutableStateMapOf<String, Set<AppAction>>()
     private var compatSyncStarted = false
     private var compatSyncInProgress = false
-    private var startupUpdateCheckStarted = false
 
     var initialized by mutableStateOf(false)
         private set
@@ -86,7 +85,6 @@ class AppsListViewModel(application: Application) : AndroidViewModel(application
                 firmwareInstallState = AppRepository.getFirmwareInstallState()
                 loadApps()
                 startCompatibilitySync()
-                startUpdateCheckIfEnabled()
             }
             loading = false
         }
@@ -294,18 +292,6 @@ class AppsListViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             if (syncCompatibilityDatabase()) {
                 loadApps()
-            }
-        }
-    }
-
-    private fun startUpdateCheckIfEnabled() {
-        if (startupUpdateCheckStarted) return
-
-        startupUpdateCheckStarted = true
-        viewModelScope.launch {
-            val enabled = runCatching { NativeLib.getGlobalConfig().checkForUpdatesMode != 0 }.getOrDefault(true)
-            if (enabled) {
-                checkForUpdates(manual = false)
             }
         }
     }

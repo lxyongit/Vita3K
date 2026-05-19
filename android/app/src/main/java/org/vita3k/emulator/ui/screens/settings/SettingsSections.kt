@@ -1559,27 +1559,6 @@ private fun EmulatorSettingsSection(
                 ),
                 onShowHelp = onShowHelp
             )
-            val updateModeTitle = stringResource(R.string.settings_emulator_check_updates)
-            SettingsChoiceField(
-                title = updateModeTitle,
-                options = listOf(
-                    stringResource(R.string.settings_emulator_check_updates_check),
-                    stringResource(R.string.settings_emulator_check_updates_dont_check)
-                ),
-                selectedIndex = if (cfg.checkForUpdatesMode == 0) 1 else 0,
-                onSelect = { index ->
-                    onUpdate {
-                        checkForUpdatesMode = if (index == 0) 1 else 0
-                        checkForUpdates = checkForUpdatesMode != 0
-                    }
-                },
-                help = SettingsHelpEntry(
-                    title = updateModeTitle,
-                    body = stringResource(R.string.settings_emulator_check_updates_desc),
-                    scope = SettingsScope.Global
-                ),
-                onShowHelp = onShowHelp
-            )
             SettingsToggleRow(
                 title = stringResource(R.string.settings_emulator_archive_log),
                 checked = cfg.archiveLog,

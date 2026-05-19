@@ -138,7 +138,6 @@ internal fun rememberSettingsSearchEntries(
             add(entry(SettingsCategory.Interface, R.string.settings_emulator_ui_language, R.string.settings_emulator_ui_language_desc, scope = SettingsScope.Global, keywords = "interface ui app language locale"))
             add(entry(SettingsCategory.Emulator, R.string.settings_emulator_storage_folder, R.string.settings_emulator_storage_folder_desc, scope = SettingsScope.Global, keywords = "storage folder path data directory"))
             add(entry(SettingsCategory.Emulator, R.string.settings_emulator_show_compile_shaders, R.string.settings_emulator_show_compile_shaders_desc, scope = SettingsScope.Global))
-            add(entry(SettingsCategory.Emulator, R.string.settings_emulator_check_updates, R.string.settings_emulator_check_updates_desc, scope = SettingsScope.Global))
             add(entry(SettingsCategory.Emulator, R.string.settings_emulator_archive_log, R.string.settings_emulator_archive_log_desc, scope = SettingsScope.Global))
             add(entry(SettingsCategory.Emulator, R.string.settings_emulator_log_compat_warn, R.string.settings_emulator_log_compat_warn_desc, scope = SettingsScope.Global))
             add(entry(SettingsCategory.Emulator, R.string.settings_emulator_log_level, R.string.settings_emulator_log_level_desc, scope = SettingsScope.Global, keywords = "logging trace debug info warning error critical off"))
