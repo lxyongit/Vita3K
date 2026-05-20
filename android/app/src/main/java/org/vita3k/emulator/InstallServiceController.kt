@@ -13,6 +13,7 @@ enum class InstallOperationType {
     FIRMWARE,
     PKG,
     ARCHIVE,
+    FIRMWARE_THEN_ARCHIVE,
     ARCHIVE_FOLDER,
     LICENSE_FILE,
     LICENSE_ZRIF
@@ -34,6 +35,7 @@ object InstallServiceController {
     const val EXTRA_PATHS = "paths"
     const val EXTRA_ZRIF = "zrif"
     const val EXTRA_LICENSE_PATH = "license_path"
+    const val EXTRA_FORCE_REINSTALL = "force_reinstall"
 
     private val nextOperationId = AtomicLong(1L)
     private val mutableState = MutableStateFlow(InstallServiceState())
@@ -52,9 +54,17 @@ object InstallServiceController {
             putExtra(EXTRA_LICENSE_PATH, licensePath)
         }
 
-    fun startArchive(context: Context, path: String): Long =
+    fun startArchive(context: Context, path: String, forceReinstall: Boolean = true): Long =
         start(context, InstallOperationType.ARCHIVE, context.getString(org.vita3k.emulator.R.string.install_status_archive)) {
             putExtra(EXTRA_PATH, path)
+            putExtra(EXTRA_FORCE_REINSTALL, forceReinstall)
+        }
+
+    fun startFirmwareThenArchive(context: Context, firmwarePaths: List<String>, archivePath: String): Long =
+        start(context, InstallOperationType.FIRMWARE_THEN_ARCHIVE, context.getString(org.vita3k.emulator.R.string.install_status_firmware)) {
+            putStringArrayListExtra(EXTRA_PATHS, ArrayList(firmwarePaths))
+            putExtra(EXTRA_PATH, archivePath)
+            putExtra(EXTRA_FORCE_REINSTALL, false)
         }
 
     fun startArchiveFolder(context: Context, paths: List<String>): Long =

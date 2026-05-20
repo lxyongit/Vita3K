@@ -13,8 +13,9 @@ data class OverlayPosition(
 )
 
 object OverlayStore {
-    private const val PREFS_NAME = "overlay_settings"
+    private const val PREFS_NAME = "vita3k_overlay_settings"
     private const val LEGACY_PREFS_SUFFIX = "_preferences"
+    private const val LEGACY_KEY_OVERLAY_INIT = "OverlayInit"
     private const val GLOBAL_SCOPE = "global"
     private const val GAME_SCOPE_PREFIX = "game:"
     private const val KEY_OVERRIDE_ENABLED = "override_enabled"
@@ -293,6 +294,10 @@ object OverlayStore {
 
     private fun loadLegacyGlobalLayout(context: Context, fallback: OverlayLayout): OverlayLayout {
         val legacyPrefs = context.applicationContext.getSharedPreferences("${context.packageName}$LEGACY_PREFS_SUFFIX", Context.MODE_PRIVATE)
+        if (!legacyPrefs.getBoolean(LEGACY_KEY_OVERLAY_INIT, false)) {
+            return fallback
+        }
+
         val anyEntryPresent = defaultEntries.any { entry ->
             legacyPrefs.contains(legacyPositionKey(entry.buttonType, "-X")) &&
                 legacyPrefs.contains(legacyPositionKey(entry.buttonType, "-Y"))

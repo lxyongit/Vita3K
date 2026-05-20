@@ -92,7 +92,14 @@ class InstallForegroundService : Service() {
             )
             InstallOperationType.ARCHIVE -> installArchive(
                 operationId = operationId,
-                path = intent.getStringExtra(InstallServiceController.EXTRA_PATH).orEmpty()
+                path = intent.getStringExtra(InstallServiceController.EXTRA_PATH).orEmpty(),
+                forceReinstall = intent.getBooleanExtra(InstallServiceController.EXTRA_FORCE_REINSTALL, true)
+            )
+            InstallOperationType.FIRMWARE_THEN_ARCHIVE -> installFirmwareThenArchive(
+                operationId = operationId,
+                firmwarePaths = intent.getStringArrayListExtra(InstallServiceController.EXTRA_PATHS).orEmpty(),
+                archivePath = intent.getStringExtra(InstallServiceController.EXTRA_PATH).orEmpty(),
+                forceReinstall = intent.getBooleanExtra(InstallServiceController.EXTRA_FORCE_REINSTALL, false)
             )
             InstallOperationType.ARCHIVE_FOLDER -> installArchiveFolder(
                 operationId = operationId,
@@ -162,13 +169,80 @@ class InstallForegroundService : Service() {
         }
     }
 
-    private suspend fun installArchive(operationId: Long, path: String): InstallResult {
+    private suspend fun installArchive(
+        operationId: Long,
+        path: String,
+        forceReinstall: Boolean = true
+    ): InstallResult {
         val deleteOptions = sourceDeleteOptions(
             deleteOption(R.string.install_delete_archive_files, path)
         )
-        val success = InstallRepository.installArchive(path, forceReinstall = true) { pct, status ->
+        val success = InstallRepository.installArchive(path, forceReinstall = forceReinstall) { pct, status ->
             onProgress(operationId, pct, status)
         }
+        return if (success) {
+            InstallResult(
+                status = InstallResultStatus.SUCCESS,
+                message = getString(R.string.install_success_archive),
+                deleteOptions = deleteOptions
+            )
+        } else {
+            InstallResult(
+                status = InstallResultStatus.ERROR,
+                message = getString(R.string.install_failed_archive),
+                deleteOptions = deleteOptions
+            )
+        }
+    }
+
+    private suspend fun installFirmwareThenArchive(
+        operationId: Long,
+        firmwarePaths: List<String>,
+        archivePath: String,
+        forceReinstall: Boolean
+    ): InstallResult {
+        if (firmwarePaths.isEmpty() || archivePath.isBlank()) {
+            return InstallResult(
+                status = InstallResultStatus.ERROR,
+                message = getString(R.string.install_error_generic, "missing install files")
+            )
+        }
+
+        val deleteOptions = sourceDeleteOptions(
+            deleteOption(R.string.install_delete_firmware_file, firmwarePaths),
+            deleteOption(R.string.install_delete_archive_files, archivePath)
+        )
+        val totalSteps = firmwarePaths.size + 1
+
+        firmwarePaths.forEachIndexed { index, path ->
+            val firmwareName = File(path).name.ifBlank { path }
+            val stepStatus = "${getString(R.string.install_status_firmware)} (${index + 1}/${firmwarePaths.size}) $firmwareName"
+            InstallServiceController.updateProgress(operationId, ((index * 100f) / totalSteps).toInt(), stepStatus)
+            val version = InstallRepository.installFirmware(path) { pct, status ->
+                val overall = ((index + (pct / 100f)) / totalSteps.toFloat()) * 100f
+                onProgress(operationId, overall.toInt(), status.ifBlank { stepStatus })
+            }
+            if (version.isEmpty()) {
+                return InstallResult(
+                    status = InstallResultStatus.ERROR,
+                    message = getString(R.string.install_failed_firmware),
+                    deleteOptions = deleteOptions
+                )
+            }
+        }
+
+        val archiveName = File(archivePath).name.ifBlank { archivePath }
+        val archiveStatus = "${getString(R.string.install_status_archive)} $archiveName"
+        InstallServiceController.updateProgress(
+            operationId,
+            ((firmwarePaths.size * 100f) / totalSteps).toInt(),
+            archiveStatus
+        )
+        val success = InstallRepository.installArchive(archivePath, forceReinstall = forceReinstall) { pct, status ->
+            val overall = ((firmwarePaths.size + (pct / 100f)) / totalSteps.toFloat()) * 100f
+            onProgress(operationId, overall.toInt(), status.ifBlank { archiveStatus })
+        }
+
         return if (success) {
             InstallResult(
                 status = InstallResultStatus.SUCCESS,

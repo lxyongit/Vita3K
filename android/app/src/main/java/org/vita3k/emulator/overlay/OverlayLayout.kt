@@ -35,5 +35,5 @@ internal fun Float.coerceNormalizedCoordinate(): Float {
     if (!isFinite()) {
         return 0f
     }
-    return coerceIn(0f, 1f)
+    return coerceIn(-0.25f, 1.25f)
 }

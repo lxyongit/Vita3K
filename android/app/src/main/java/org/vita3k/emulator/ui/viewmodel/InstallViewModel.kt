@@ -194,9 +194,14 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
         pendingPkgLicensePath = null
     }
 
-    fun installArchive(path: String) {
+    fun installArchive(path: String, forceReinstall: Boolean = true) {
         InstallServiceController.clearResult()
-        InstallServiceController.startArchive(getApplication(), path)
+        InstallServiceController.startArchive(getApplication(), path, forceReinstall)
+    }
+
+    fun installFirmwareThenArchive(firmwarePaths: List<String>, archivePath: String) {
+        InstallServiceController.clearResult()
+        InstallServiceController.startFirmwareThenArchive(getApplication(), firmwarePaths, archivePath)
     }
 
     fun installArchiveFolder(paths: List<String>) {

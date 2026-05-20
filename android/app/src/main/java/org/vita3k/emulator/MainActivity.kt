@@ -1,5 +1,6 @@
 package org.vita3k.emulator
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -106,7 +107,12 @@ class MainActivity : AppCompatActivity() {
         UiLanguages.applyStored(this)
         setTheme(R.style.Theme_Vita3K)
 
-        val storagePath = AppStorage.storageRootPath(this)
+        val storagePath = resolveStoragePath(intent)
+        val initialRoute = intent.getStringExtra(EXTRA_INITIAL_ROUTE)
+        val installArchivePath = intent.getStringExtra(EXTRA_INSTALL_ARCHIVE_PATH)
+        if (initialRoute == ROUTE_SETTINGS || !installArchivePath.isNullOrBlank()) {
+            AppStorage.setInitialSetupCompleted(this, true)
+        }
         appsListViewModel.initialize(storagePath)
 
         setContent {
@@ -116,10 +122,19 @@ class MainActivity : AppCompatActivity() {
                     installViewModel = installViewModel,
                     settingsViewModel = settingsViewModel,
                     userManagementViewModel = userManagementViewModel,
+                    initialRoute = initialRoute,
                     onAppLaunch = { app -> launchApp(app.titleId, app.title) }
                 )
             }
         }
+
+        handleExternalInstallRequest(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleExternalInstallRequest(intent)
     }
 
     fun requestStorageFolderChange(onResult: (String?) -> Unit) {
@@ -246,5 +261,37 @@ class MainActivity : AppCompatActivity() {
 
     private fun prepareFrontendRuntime() {
         NativeLib.prepareFrontend()
+    }
+
+    private fun resolveStoragePath(intent: Intent?): String {
+        return intent?.getStringExtra(EXTRA_STORAGE_PATH)
+            ?.takeIf { it.isNotBlank() }
+            ?: AppStorage.storageRootPath(this)
+    }
+
+    private fun handleExternalInstallRequest(intent: Intent?) {
+        val firmwarePaths = intent?.getStringArrayListExtra(EXTRA_INSTALL_FIRMWARE_PATHS)
+            .orEmpty()
+            .filter { it.isNotBlank() }
+        val archivePath = intent?.getStringExtra(EXTRA_INSTALL_ARCHIVE_PATH)
+            ?.takeIf { it.isNotBlank() }
+            ?: return
+
+        intent.removeExtra(EXTRA_INSTALL_FIRMWARE_PATHS)
+        intent.removeExtra(EXTRA_INSTALL_ARCHIVE_PATH)
+        AppStorage.setInitialSetupCompleted(this, true)
+        if (firmwarePaths.isNotEmpty()) {
+            installViewModel.installFirmwareThenArchive(firmwarePaths, archivePath)
+        } else {
+            installViewModel.installArchive(archivePath, forceReinstall = false)
+        }
+    }
+
+    companion object {
+        const val EXTRA_STORAGE_PATH = "org.vita3k.emulator.extra.STORAGE_PATH"
+        const val EXTRA_INITIAL_ROUTE = "org.vita3k.emulator.extra.INITIAL_ROUTE"
+        const val EXTRA_INSTALL_FIRMWARE_PATHS = "org.vita3k.emulator.extra.INSTALL_FIRMWARE_PATHS"
+        const val EXTRA_INSTALL_ARCHIVE_PATH = "org.vita3k.emulator.extra.INSTALL_ARCHIVE_PATH"
+        const val ROUTE_SETTINGS = "settings"
     }
 }

@@ -81,15 +81,40 @@ public final class InputOverlay extends SurfaceView implements OnTouchListener
    */
   public static Bitmap resizeBitmap(Context context, Bitmap bitmap, float scale)
   {
+    if (bitmap == null)
+      bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
     DisplayMetrics dm = context.getResources().getDisplayMetrics();
     int minDimension = Math.min(dm.widthPixels, dm.heightPixels);
     int maxBitmapDimension = Math.max(bitmap.getWidth(), bitmap.getHeight());
+    if (maxBitmapDimension <= 0)
+      return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
     float bitmapScale = scale * minDimension / maxBitmapDimension;
 
     return Bitmap.createScaledBitmap(bitmap,
-            (int) (bitmap.getWidth() * bitmapScale),
-            (int) (bitmap.getHeight() * bitmapScale),
+            Math.max(1, (int) (bitmap.getWidth() * bitmapScale)),
+            Math.max(1, (int) (bitmap.getHeight() * bitmapScale)),
             true);
+  }
+
+  private static Bitmap decodeOverlayBitmap(Context context, Resources res, int resId)
+  {
+    Bitmap bitmap = BitmapFactory.decodeResource(res, resId);
+    if (bitmap != null)
+      return bitmap;
+
+    Drawable drawable = res.getDrawable(resId, context.getTheme());
+    if (drawable == null)
+      return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
+    int width = drawable.getIntrinsicWidth() > 0 ? drawable.getIntrinsicWidth() : 64;
+    int height = drawable.getIntrinsicHeight() > 0 ? drawable.getIntrinsicHeight() : 64;
+    bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+    drawable.draw(canvas);
+    return bitmap;
   }
 
   /**
@@ -576,16 +601,16 @@ public final class InputOverlay extends SurfaceView implements OnTouchListener
       overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.button_triangle,
               R.drawable.button_triangle_pressed, ButtonType.BUTTON_TRIANGLE, ControlId.y,
               OVERLAY_MASK_BASIC, layout, layoutBounds, mScale, mOpacity));
-      overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.button_start,
-              R.drawable.button_start_pressed, ButtonType.BUTTON_START,
+      overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.vita3k_button_start,
+              R.drawable.vita3k_button_start_pressed, ButtonType.BUTTON_START,
               ControlId.start, OVERLAY_MASK_BASIC, layout, layoutBounds, mScale, mOpacity));
 
       overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.button_ps,
-            R.drawable.button_ps_pressed, ButtonType.BUTTON_PS,
-            ControlId.guide, OVERLAY_MASK_BASIC, layout, layoutBounds, mScale, mOpacity));
+              R.drawable.button_ps_pressed, ButtonType.BUTTON_PS,
+              ControlId.guide, OVERLAY_MASK_BASIC, layout, layoutBounds, mScale, mOpacity));
 
-      overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.button_select,
-              R.drawable.button_select_pressed, ButtonType.BUTTON_SELECT,
+      overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.vita3k_button_select,
+              R.drawable.vita3k_button_select_pressed, ButtonType.BUTTON_SELECT,
               ControlId.select, OVERLAY_MASK_BASIC, layout, layoutBounds, mScale, mOpacity));
 
       overlayButtons.add(initializeOverlayButton(getContext(), R.drawable.button_l,
@@ -717,9 +742,9 @@ public final class InputOverlay extends SurfaceView implements OnTouchListener
 
     // Initialize the InputOverlayDrawableButton.
     final Bitmap defaultStateBitmap =
-            resizeBitmap(context, BitmapFactory.decodeResource(res, defaultResId), scale);
+        resizeBitmap(context, decodeOverlayBitmap(context, res, defaultResId), scale);
     final Bitmap pressedStateBitmap =
-            resizeBitmap(context, BitmapFactory.decodeResource(res, pressedResId), scale);
+        resizeBitmap(context, decodeOverlayBitmap(context, res, pressedResId), scale);
     final InputOverlayDrawableButton overlayDrawable =
             new InputOverlayDrawableButton(res, defaultStateBitmap, pressedStateBitmap, legacyId,
                     control, role);
@@ -782,12 +807,12 @@ public final class InputOverlay extends SurfaceView implements OnTouchListener
 
     // Initialize the InputOverlayDrawableDpad.
     final Bitmap defaultStateBitmap =
-            resizeBitmap(context, BitmapFactory.decodeResource(res, defaultResId), scale);
+        resizeBitmap(context, decodeOverlayBitmap(context, res, defaultResId), scale);
     final Bitmap pressedOneDirectionStateBitmap =
-            resizeBitmap(context, BitmapFactory.decodeResource(res, pressedOneDirectionResId),
+        resizeBitmap(context, decodeOverlayBitmap(context, res, pressedOneDirectionResId),
                     scale);
     final Bitmap pressedTwoDirectionsStateBitmap =
-            resizeBitmap(context, BitmapFactory.decodeResource(res, pressedTwoDirectionsResId),
+        resizeBitmap(context, decodeOverlayBitmap(context, res, pressedTwoDirectionsResId),
                     scale);
     final InputOverlayDrawableDpad overlayDrawable =
             new InputOverlayDrawableDpad(res, defaultStateBitmap,
@@ -840,9 +865,9 @@ public final class InputOverlay extends SurfaceView implements OnTouchListener
 
     // Initialize the InputOverlayDrawableJoystick.
     final Bitmap bitmapOuter =
-            resizeBitmap(context, BitmapFactory.decodeResource(res, resOuter), scale);
-    final Bitmap bitmapInnerDefault = BitmapFactory.decodeResource(res, defaultResInner);
-    final Bitmap bitmapInnerPressed = BitmapFactory.decodeResource(res, pressedResInner);
+            resizeBitmap(context, decodeOverlayBitmap(context, res, resOuter), scale);
+    final Bitmap bitmapInnerDefault = decodeOverlayBitmap(context, res, defaultResInner);
+    final Bitmap bitmapInnerPressed = decodeOverlayBitmap(context, res, pressedResInner);
 
     OverlayPosition position = layout.positionFor(legacyId);
     if (position == null)
@@ -966,7 +991,7 @@ public final class InputOverlay extends SurfaceView implements OnTouchListener
       height = metrics.heightPixels;
     }
 
-    return new LayoutBounds(width, height);
+    return new LayoutBounds(Math.max(width, height), Math.min(width, height));
   }
 
   private void setLayout(OverlayLayout layout, boolean refresh)

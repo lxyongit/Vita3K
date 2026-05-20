@@ -72,17 +72,27 @@ fun AppNavigation(
     installViewModel: InstallViewModel,
     settingsViewModel: SettingsViewModel,
     userManagementViewModel: UserManagementViewModel,
+    initialRoute: String? = null,
     onAppLaunch: (AppInfo) -> Unit
 ) {
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val context = LocalContext.current
     val activity = context as? MainActivity
+    val launchedDirectlyToSettings = initialRoute == ROUTE_SETTINGS
     val trophyRouteActive = isTrophyRoute(currentBackStackEntry?.destination?.route)
     var showArchiveSourceDialog by remember { mutableStateOf(false) }
     var showStandaloneLicenseDialog by remember { mutableStateOf(false) }
     val startDestination by produceState<String?>(initialValue = null, key1 = context) {
-        value = if (AppStorage.isInitialSetupCompleted(context)) ROUTE_APPS_LIST else ROUTE_INITIAL_SETUP
+        val requestedRoute = when (initialRoute) {
+            ROUTE_SETTINGS -> ROUTE_SETTINGS
+            else -> null
+        }
+        value = if (AppStorage.isInitialSetupCompleted(context)) {
+            requestedRoute ?: ROUTE_APPS_LIST
+        } else {
+            ROUTE_INITIAL_SETUP
+        }
     }
 
     ImmersiveLandscapeEffect(activity = activity, enabled = trophyRouteActive)
@@ -333,7 +343,13 @@ fun AppNavigation(
                 appName = null,
                 viewModel = settingsViewModel,
                 onStorageChanged = { appsListViewModel.refreshAppsList() },
-                onBack = { navController.popBackStack() }
+                onBack = {
+                    if (launchedDirectlyToSettings) {
+                        activity?.finish()
+                    } else {
+                        navController.popBackStack()
+                    }
+                }
             )
         }
 
