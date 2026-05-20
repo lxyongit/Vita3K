@@ -25,6 +25,8 @@ object OverlayStore {
     private const val KEY_HIDE_ON_CONTROLLER = "hide_overlay_on_controller"
     private const val KEY_CONFIG_PREFIX = "config"
     private const val KEY_LAYOUT_PREFIX = "layout"
+    private const val KEY_LAYOUT_VERSION = "layout_version"
+    private const val CURRENT_LAYOUT_VERSION = 5
     private const val KEY_POSITION_X_SUFFIX = ":x"
     private const val KEY_POSITION_Y_SUFFIX = ":y"
 
@@ -35,24 +37,31 @@ object OverlayStore {
     )
 
     private val defaultEntries = listOf(
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_CROSS, R.integer.BUTTON_CROSS_X, R.integer.BUTTON_CROSS_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_CIRCLE, R.integer.BUTTON_CIRCLE_X, R.integer.BUTTON_CIRCLE_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_SQUARE, R.integer.BUTTON_SQUARE_X, R.integer.BUTTON_SQUARE_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_TRIANGLE, R.integer.BUTTON_TRIANGLE_X, R.integer.BUTTON_TRIANGLE_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_SELECT, R.integer.BUTTON_SELECT_X, R.integer.BUTTON_SELECT_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_START, R.integer.BUTTON_START_X, R.integer.BUTTON_START_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_PS, R.integer.BUTTON_PS_X, R.integer.BUTTON_PS_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.DPAD_UP, R.integer.DPAD_UP_X, R.integer.DPAD_UP_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.STICK_LEFT, R.integer.STICK_LEFT_X, R.integer.STICK_LEFT_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.STICK_RIGHT, R.integer.STICK_RIGHT_X, R.integer.STICK_RIGHT_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_L, R.integer.TRIGGER_L_X, R.integer.TRIGGER_L_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_R, R.integer.TRIGGER_R_X, R.integer.TRIGGER_R_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_L2, R.integer.TRIGGER_L2_X, R.integer.TRIGGER_L2_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_R2, R.integer.TRIGGER_R2_X, R.integer.TRIGGER_R2_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_L3, R.integer.TRIGGER_L3_X, R.integer.TRIGGER_L3_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_R3, R.integer.TRIGGER_R3_X, R.integer.TRIGGER_R3_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_TOUCH_HIDE, R.integer.BUTTON_TOUCH_HIDE_X, R.integer.BUTTON_TOUCH_HIDE_Y),
-        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_TOUCH_SWITCH, R.integer.BUTTON_TOUCH_SWITCH_X, R.integer.BUTTON_TOUCH_SWITCH_Y)
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_CROSS, R.integer.VITA3K_BUTTON_CROSS_X, R.integer.VITA3K_BUTTON_CROSS_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_CIRCLE, R.integer.VITA3K_BUTTON_CIRCLE_X, R.integer.VITA3K_BUTTON_CIRCLE_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_SQUARE, R.integer.VITA3K_BUTTON_SQUARE_X, R.integer.VITA3K_BUTTON_SQUARE_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_TRIANGLE, R.integer.VITA3K_BUTTON_TRIANGLE_X, R.integer.VITA3K_BUTTON_TRIANGLE_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_SELECT, R.integer.VITA3K_BUTTON_SELECT_X, R.integer.VITA3K_BUTTON_SELECT_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_START, R.integer.VITA3K_BUTTON_START_X, R.integer.VITA3K_BUTTON_START_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_PS, R.integer.VITA3K_BUTTON_PS_X, R.integer.VITA3K_BUTTON_PS_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.DPAD_UP, R.integer.VITA3K_DPAD_UP_X, R.integer.VITA3K_DPAD_UP_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.STICK_LEFT, R.integer.VITA3K_STICK_LEFT_X, R.integer.VITA3K_STICK_LEFT_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.STICK_RIGHT, R.integer.VITA3K_STICK_RIGHT_X, R.integer.VITA3K_STICK_RIGHT_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_L, R.integer.VITA3K_TRIGGER_L_X, R.integer.VITA3K_TRIGGER_L_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_R, R.integer.VITA3K_TRIGGER_R_X, R.integer.VITA3K_TRIGGER_R_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_L2, R.integer.VITA3K_TRIGGER_L2_X, R.integer.VITA3K_TRIGGER_L2_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_R2, R.integer.VITA3K_TRIGGER_R2_X, R.integer.VITA3K_TRIGGER_R2_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_L3, R.integer.VITA3K_TRIGGER_L3_X, R.integer.VITA3K_TRIGGER_L3_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.TRIGGER_R3, R.integer.VITA3K_TRIGGER_R3_X, R.integer.VITA3K_TRIGGER_R3_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_TOUCH_HIDE, R.integer.VITA3K_BUTTON_TOUCH_HIDE_X, R.integer.VITA3K_BUTTON_TOUCH_HIDE_Y),
+        OverlayPositionDefaults(InputOverlay.ButtonType.BUTTON_TOUCH_SWITCH, R.integer.VITA3K_BUTTON_TOUCH_SWITCH_X, R.integer.VITA3K_BUTTON_TOUCH_SWITCH_Y)
+    )
+
+    private val edgeControlsResetOnLayoutUpgrade = setOf(
+        InputOverlay.ButtonType.BUTTON_SELECT,
+        InputOverlay.ButtonType.BUTTON_START,
+        InputOverlay.ButtonType.TRIGGER_L,
+        InputOverlay.ButtonType.TRIGGER_R
     )
 
     @JvmStatic
@@ -209,6 +218,7 @@ object OverlayStore {
                 configKey(normalizedScopeId, KEY_HIDE_ON_CONTROLLER),
                 normalizedState.config.hideOverlayWhenControllerConnected
             )
+            putInt(layoutVersionKey(normalizedScopeId), CURRENT_LAYOUT_VERSION)
             saveLayoutEntries(this, normalizedScopeId, normalizedState.layout)
             if (markOverride && normalizedScopeId.isNotEmpty()) {
                 putBoolean(overrideEnabledKey(normalizedScopeId), true)
@@ -252,18 +262,24 @@ object OverlayStore {
             return fallback
         }
 
+        val layoutVersion = prefs.getInt(layoutVersionKey(scopeId), 0)
+        val shouldResetEdgeControls = layoutVersion < CURRENT_LAYOUT_VERSION
         val positions = defaultEntries.associate { entry ->
             val fallbackPosition = fallback.positionFor(entry.buttonType) ?: OverlayPosition(0f, 0f)
-            entry.buttonType to OverlayPosition(
-                normalizedX = prefs.getFloat(
-                    positionKey(scopeId, entry.buttonType, KEY_POSITION_X_SUFFIX),
-                    fallbackPosition.normalizedX
-                ).coerceNormalizedCoordinate(),
-                normalizedY = prefs.getFloat(
-                    positionKey(scopeId, entry.buttonType, KEY_POSITION_Y_SUFFIX),
-                    fallbackPosition.normalizedY
-                ).coerceNormalizedCoordinate()
-            )
+            if (shouldResetEdgeControls && edgeControlsResetOnLayoutUpgrade.contains(entry.buttonType)) {
+                entry.buttonType to fallbackPosition
+            } else {
+                entry.buttonType to OverlayPosition(
+                    normalizedX = prefs.getFloat(
+                        positionKey(scopeId, entry.buttonType, KEY_POSITION_X_SUFFIX),
+                        fallbackPosition.normalizedX
+                    ).coerceNormalizedCoordinate(),
+                    normalizedY = prefs.getFloat(
+                        positionKey(scopeId, entry.buttonType, KEY_POSITION_Y_SUFFIX),
+                        fallbackPosition.normalizedY
+                    ).coerceNormalizedCoordinate()
+                )
+            }
         }
         return OverlayLayout(positions).normalized()
     }
@@ -338,6 +354,7 @@ object OverlayStore {
         editor.remove(configKey(scopeId, KEY_OVERLAY_SCALE))
         editor.remove(configKey(scopeId, KEY_OVERLAY_OPACITY))
         editor.remove(configKey(scopeId, KEY_HIDE_ON_CONTROLLER))
+        editor.remove(layoutVersionKey(scopeId))
         defaultEntries.forEach { entry ->
             editor.remove(positionKey(scopeId, entry.buttonType, KEY_POSITION_X_SUFFIX))
             editor.remove(positionKey(scopeId, entry.buttonType, KEY_POSITION_Y_SUFFIX))
@@ -356,6 +373,9 @@ object OverlayStore {
 
     private fun positionKey(scopeId: String?, buttonType: Int, suffix: String): String =
         scopePrefix(scopeId) + ":" + KEY_LAYOUT_PREFIX + ":landscape:" + buttonType + suffix
+
+    private fun layoutVersionKey(scopeId: String?): String =
+        scopePrefix(scopeId) + ":" + KEY_LAYOUT_PREFIX + ":" + KEY_LAYOUT_VERSION
 
     private fun scopePrefix(scopeId: String?): String {
         val normalizedScopeId = normalizeScopeId(scopeId)
