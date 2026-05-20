@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import org.vita3k.emulator.data.AppStorage
+import org.vita3k.emulator.data.UiLanguages
 import org.vita3k.emulator.ui.navigation.AppNavigation
 import org.vita3k.emulator.ui.theme.Vita3KTheme
 import org.vita3k.emulator.ui.viewmodel.AppsListViewModel
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         prepareFrontendRuntime()
+        UiLanguages.applyStored(this)
         setTheme(R.style.Theme_Vita3K)
 
         val storagePath = AppStorage.storageRootPath(this)

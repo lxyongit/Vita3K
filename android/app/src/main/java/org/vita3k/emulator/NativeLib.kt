@@ -1,5 +1,6 @@
 package org.vita3k.emulator
 
+import org.libsdl.app.SDLActivity
 import org.vita3k.emulator.data.EmulatorConfig
 import org.vita3k.emulator.data.InstallCallback
 import org.vita3k.emulator.data.NativeAppInfo
@@ -12,6 +13,11 @@ import org.vita3k.emulator.data.NativeUser
  * Game boot/stop is handled by the SDL-based Emulator activity.
  */
 object NativeLib {
+    init {
+        System.loadLibrary("Vita3K")
+        SDLActivity.nativeSetenv("SDL_ANDROID_ALLOW_RECREATE_ACTIVITY", "1")
+    }
+
     const val PAUSE_REASON_USER = 1 shl 0
     const val PAUSE_REASON_MENU = 1 shl 1
     const val PAUSE_REASON_BACKGROUND = 1 shl 2
