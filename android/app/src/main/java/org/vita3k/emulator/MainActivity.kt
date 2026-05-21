@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
         val storagePath = resolveStoragePath(intent)
         val initialRoute = intent.getStringExtra(EXTRA_INITIAL_ROUTE)
         val installArchivePath = intent.getStringExtra(EXTRA_INSTALL_ARCHIVE_PATH)
-        if (initialRoute == ROUTE_SETTINGS || !installArchivePath.isNullOrBlank()) {
+        if (isSettingsRoute(initialRoute) || !installArchivePath.isNullOrBlank()) {
             AppStorage.setInitialSetupCompleted(this, true)
         }
         appsListViewModel.initialize(storagePath)
@@ -465,5 +465,9 @@ class MainActivity : AppCompatActivity() {
         const val EXTRA_INSTALL_FIRMWARE_PATHS = "org.vita3k.emulator.extra.INSTALL_FIRMWARE_PATHS"
         const val EXTRA_INSTALL_ARCHIVE_PATH = "org.vita3k.emulator.extra.INSTALL_ARCHIVE_PATH"
         const val ROUTE_SETTINGS = "settings"
+    }
+
+    private fun isSettingsRoute(route: String?): Boolean {
+        return route == ROUTE_SETTINGS || route?.startsWith("settings/custom/") == true
     }
 }

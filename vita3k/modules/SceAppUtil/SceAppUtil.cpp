@@ -505,18 +505,20 @@ EXPORT(SceInt32, sceAppUtilSystemParamGetInt, SceSystemParamId paramId, SceInt32
     if (!value)
         return RET_ERROR(SCE_APPUTIL_ERROR_PARAMETER);
 
+    const auto &current_config = emuenv.cfg.current_config;
+
     switch (paramId) {
     case SCE_SYSTEM_PARAM_ID_LANG:
-        *value = (SceSystemParamLang)emuenv.cfg.sys_lang;
+        *value = (SceSystemParamLang)current_config.sys_lang;
         return 0;
     case SCE_SYSTEM_PARAM_ID_ENTER_BUTTON:
-        *value = (SceSystemParamEnterButtonAssign)emuenv.cfg.sys_button;
+        *value = (SceSystemParamEnterButtonAssign)current_config.sys_button;
         return 0;
     case SCE_SYSTEM_PARAM_ID_DATE_FORMAT:
-        *value = (SceSystemParamDateFormat)emuenv.cfg.sys_date_format;
+        *value = (SceSystemParamDateFormat)current_config.sys_date_format;
         return 0;
     case SCE_SYSTEM_PARAM_ID_TIME_FORMAT:
-        *value = (SceSystemParamTimeFormat)emuenv.cfg.sys_time_format;
+        *value = (SceSystemParamTimeFormat)current_config.sys_time_format;
         return 0;
     case SCE_SYSTEM_PARAM_ID_TIME_ZONE:
     case SCE_SYSTEM_PARAM_ID_SUMMERTIME:

@@ -64,6 +64,14 @@ private fun customConfigRoute(titleId: String, appName: String): String {
     return "settings/custom/${Uri.encode(titleId)}?appName=${Uri.encode(appName)}"
 }
 
+private fun isCustomSettingsRoute(route: String?): Boolean {
+    return route?.startsWith("settings/custom/") == true
+}
+
+private fun isSettingsRoute(route: String?): Boolean {
+    return route == ROUTE_SETTINGS || isCustomSettingsRoute(route)
+}
+
 private fun isTrophyRoute(route: String?): Boolean = route == ROUTE_TROPHIES
 
 @Composable
@@ -79,17 +87,22 @@ fun AppNavigation(
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val context = LocalContext.current
     val activity = context as? MainActivity
-    val launchedDirectlyToSettings = initialRoute == ROUTE_SETTINGS
+    val requestedInitialRoute = initialRoute?.takeIf(::isSettingsRoute)
+    val launchedDirectlyToSettings = isSettingsRoute(initialRoute)
     val trophyRouteActive = isTrophyRoute(currentBackStackEntry?.destination?.route)
     var showArchiveSourceDialog by remember { mutableStateOf(false) }
     var showStandaloneLicenseDialog by remember { mutableStateOf(false) }
+    var initialCustomRouteHandled by remember(requestedInitialRoute) {
+        mutableStateOf(requestedInitialRoute == null || !isCustomSettingsRoute(requestedInitialRoute))
+    }
     val startDestination by produceState<String?>(initialValue = null, key1 = context) {
-        val requestedRoute = when (initialRoute) {
-            ROUTE_SETTINGS -> ROUTE_SETTINGS
-            else -> null
-        }
         value = if (AppStorage.isInitialSetupCompleted(context)) {
-            requestedRoute ?: ROUTE_APPS_LIST
+            if (requestedInitialRoute == ROUTE_SETTINGS ||
+                isCustomSettingsRoute(requestedInitialRoute)) {
+                ROUTE_SETTINGS
+            } else {
+                ROUTE_APPS_LIST
+            }
         } else {
             ROUTE_INITIAL_SETUP
         }
@@ -338,6 +351,18 @@ fun AppNavigation(
         }
 
         composable(ROUTE_SETTINGS) {
+            val initialCustomRoute = requestedInitialRoute
+            LaunchedEffect(initialCustomRoute, initialCustomRouteHandled) {
+                val customRoute = initialCustomRoute?.takeIf(::isCustomSettingsRoute)
+                    ?: return@LaunchedEffect
+                if (initialCustomRouteHandled) {
+                    return@LaunchedEffect
+                }
+
+                initialCustomRouteHandled = true
+                navController.navigate(customRoute)
+            }
+
             SettingsRoute(
                 titleId = null,
                 appName = null,
