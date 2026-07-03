@@ -66,7 +66,7 @@ enum class AppRunType {
     Extracted,
 };
 
-void init_paths(Root &root_paths);
+bool init_paths(Root &root_paths);
 bool init(EmuEnvState &state, Config &cfg, const Root &root_paths);
 void shutdown_app_runtime(EmuEnvState &state);
 void reset_app_state(EmuEnvState &state);
@@ -103,7 +103,7 @@ void sync_perf_overlay_config(EmuEnvState &emuenv);
 FirmwareState get_firmware_state(const EmuEnvState &emuenv);
 bool has_firmware_installed(const EmuEnvState &emuenv);
 bool ensure_current_user(EmuEnvState &emuenv);
-bool switch_emulator_path(EmuEnvState &emuenv, const fs::path &pref_path);
+bool switch_emulator_path(EmuEnvState &emuenv, const fs::path &vita_fs_path);
 bool setup_game_launch(EmuEnvState &emuenv, const std::string &app_path, bool update_last_time_used = true);
 void prepare_game_launch_overlay(EmuEnvState &emuenv);
 bool update_runtime_metrics(EmuEnvState &emuenv, LaunchRuntimeMetrics &metrics);
