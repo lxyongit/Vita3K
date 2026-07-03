@@ -14,6 +14,7 @@
 [submodule "external/ffmpeg"]
 	path = external/ffmpeg
 	url = https://github.com/Vita3K/ffmpeg-core.git
+	ignore = dirty
 [submodule "external/glslang"]
 	path = external/glslang
 	url = https://github.com/KhronosGroup/glslang
@@ -63,6 +64,7 @@
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
+	ignore = dirty
 [submodule "external/LibAtrac9"]
 	path = external/LibAtrac9
 	url = https://github.com/Vita3K/LibAtrac9.git
